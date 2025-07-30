@@ -130,6 +130,28 @@
                 }
             ],
             "$version": "v1"
+        },
+        {
+            "Name": "PrisonConsequencesSettings",
+            "IsAdvanced": false,
+            "Keys": [
+                {
+                    "Value": true,
+                    "Name": "AllowDepositDateReset",
+                    "Description": "Reset your deposit date after prison",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
+                },
+                {
+                    "Value": true,
+                    "Name": "AllowBankBanning",
+                    "Description": "If you get banished from the region, you will be banned from the bank",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
+                }
+ 
+            ],
+            "$version": "v1"
         }
     ]
 }
