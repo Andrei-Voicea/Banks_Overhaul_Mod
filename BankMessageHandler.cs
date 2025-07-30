@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////////////
 
 
+using System.Diagnostics.Eventing.Reader;
+using DaggerfallWorkshop.Game.Utility;
+using Mono.CSharp;
 using static BankExpanded;
 
 public class BankMessageHandler
@@ -97,6 +100,14 @@ public class BankMessageHandler
         GET_SAVE_ERROR = 6,
         LOAD_SAVE_ERROR = 7
     }
+
+    public enum PrisonMessage
+    {
+
+        PRISON = 0,
+        BANISH = 1
+
+    }
     public static string GeneralMessageHandler(MessageState MessageCode, int MessageNumber = 0, int MessageNumber2 = 0)
     {
         switch (MessageCode)
@@ -136,4 +147,43 @@ public class BankMessageHandler
         }
         return "Wrong Message Code";
     }
+
+    public static string PrisonMessageHandler(PrisonMessage prisonMessage)
+    {
+
+        if (prisonMessage == PrisonMessage.PRISON)
+            return "Because of your actions, the bank canceled your deposit";
+        else if (prisonMessage == PrisonMessage.BANISH)
+            return "You have been banned from the bank";
+
+        return "Error showing prison message";
+
+
+    }
+
+    public static string RaceBanMessage(string PlayerRace)
+    {
+
+
+        if (PlayerRace == "Breton")
+            return "Dog? You greet me as a breton, mongrel race of Tamriel, motherless lackeys of every great empire that conquered your home land, be gone";
+        else if (PlayerRace == "Redguard")
+            return "You'll have to do better than that you dust dwelling goat herder pathetic remnant of infamous Yokuda, be gone";
+        else if (PlayerRace == "Nord")
+            return "You'll have to do better than that you pasty faced mongrel of an upstart race, back to the slave pens where you were bred";
+        else if (PlayerRace == "Dark Elf")
+            return "You'll have to do better than that you ashen faced god cursed product of a daedra's bowels, be gone";
+        else if (PlayerRace == "High Elf")
+            return "You'll have to do better than that you yellow faced prig inbred arogant pretender to everything that the mazken hold as your birthright, be gone";
+        else if (PlayerRace == "Wood Elf")
+            return "You'll have to do better than that you yellow faced pointy eared monkey, be gone";
+        else if (PlayerRace == "Khajiit")
+            return "I expected better from you, are you the one witless khajiit in all the world? Be gone";
+        else if (PlayerRace == "Argonian")
+            return "You'll have to do better than that you mud crawling sap licking jumped-up reptile, crawl back to your hole";
+
+            return "Criminals like you belong to a cross, be gone";
+
+    }
+
 }
