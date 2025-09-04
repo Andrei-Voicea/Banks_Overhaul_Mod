@@ -1,0 +1,49 @@
+\doxysection{Bank\+Message\+Handler Class Reference}
+\hypertarget{classBankMessageHandler}{}\label{classBankMessageHandler}\index{BankMessageHandler@{BankMessageHandler}}
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classBankMessageHandler_ae5c4926562a18477762e6099dd38961b}\label{classBankMessageHandler_ae5c4926562a18477762e6099dd38961b} 
+enum {\bfseries Message\+State} \{ \newline
+{\bfseries DEPOSIT\+\_\+\+ONE\+\_\+\+DAY} = 0
+, {\bfseries DEPOSIT} = 1
+, {\bfseries REWARD} = 2
+, {\bfseries FAILED\+\_\+\+DEPOSIT} = 3
+, \newline
+{\bfseries FAILED\+\_\+\+LOAD\+\_\+\+SETTINGS} = 4
+, {\bfseries MISSED\+\_\+\+DEPOSIT} = 5
+, {\bfseries GET\+\_\+\+SAVE\+\_\+\+ERROR} = 6
+, {\bfseries LOAD\+\_\+\+SAVE\+\_\+\+ERROR} = 7
+ \}
+\item 
+\Hypertarget{classBankMessageHandler_a271298afcaaec0f12ea40675d811feec}\label{classBankMessageHandler_a271298afcaaec0f12ea40675d811feec} 
+enum {\bfseries Prison\+Message} \{ {\bfseries PRISON} = 0
+, {\bfseries BANISH} = 1
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classBankMessageHandler_a8181d6932a1febd6d987e558a2e22db7}\label{classBankMessageHandler_a8181d6932a1febd6d987e558a2e22db7} 
+static string {\bfseries Print\+Bank\+Quality\+Message} (Quality\+Type quality)
+\item 
+\Hypertarget{classBankMessageHandler_ab194393f4d7aae1727223cb94dc92254}\label{classBankMessageHandler_ab194393f4d7aae1727223cb94dc92254} 
+static string {\bfseries Region\+Events\+Message\+Bad} (string Region\+Name, byte flags, int goldlost)
+\item 
+\Hypertarget{classBankMessageHandler_a85e4a209e03902e34b809235998b4839}\label{classBankMessageHandler_a85e4a209e03902e34b809235998b4839} 
+static string {\bfseries Region\+Events\+Message\+Good} (string Region\+Name, int goldwon)
+\item 
+\Hypertarget{classBankMessageHandler_a6469fc739a188b2037d1d37db797153a}\label{classBankMessageHandler_a6469fc739a188b2037d1d37db797153a} 
+static string {\bfseries General\+Message\+Handler} (Message\+State Message\+Code, int Message\+Number=0, int Message\+Number2=0)
+\item 
+\Hypertarget{classBankMessageHandler_ad985190df8dfc2ae31162963069713fb}\label{classBankMessageHandler_ad985190df8dfc2ae31162963069713fb} 
+static string {\bfseries Prison\+Message\+Handler} (Prison\+Message prison\+Message)
+\item 
+\Hypertarget{classBankMessageHandler_ada9af20cbaad28d44ca57bc3b57ae1f9}\label{classBankMessageHandler_ada9af20cbaad28d44ca57bc3b57ae1f9} 
+static string {\bfseries Race\+Ban\+Message} (string Player\+Race)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/voicea/\+Unity/\+Hub/\+Projects/daggerfall-\/unity-\/1.\+1.\+1/\+Assets/\+Game/\+Mods/\+Banks\+\_\+\+Overhaul\+\_\+\+Mod/Bank\+Message\+Handler.\+cs\end{DoxyCompactItemize}

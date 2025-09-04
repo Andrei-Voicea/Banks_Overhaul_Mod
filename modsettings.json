@@ -6,6 +6,13 @@
             "IsAdvanced": false,
             "Keys": [
                 {
+                    "Value": true,
+                    "Name": "AllowDepositing",
+                    "Description": "Allows the banks to use all the deposit options",
+                    "$version": "v1",
+                    "$type": "DaggerfallWorkshop.Game.Utility.ModSupport.ModSettings.ToggleKey"
+                },
+                {
                     "Min": 1,
                     "Max": 10,
                     "Value": 3,
