@@ -22,15 +22,8 @@ using DaggerfallConnect;
 using static DaggerfallWorkshop.Game.PlayerEnterExit;
 using DaggerfallWorkshop.Game.UserInterfaceWindows;
 using static BankMessageHandler;
-using DaggerfallWorkshop.Game.UserInterface;
-using System.Data.Common;
 using DaggerfallWorkshop.Game.Questing;
 
-
-
-
-
-#region Containers
 
 
 [FullSerializer.fsObject("v1")]
@@ -43,8 +36,6 @@ public class BanksRemasteredSaveData
     public long RegionEventsRemainedDays;
     public long LastCheckoutDate;
 }
-
-#endregion
 
 public class BanksRemastered : MonoBehaviour, IHasModSaveData
 {
@@ -77,6 +68,9 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
 
     public static bool BankBan { get; set; }
 
+    public static bool AllowDepositing { get; set; }
+
+
     private bool HasLoadedData = false;
     private bool HasLoan = false;
     private bool LoadedFirstTime = false;
@@ -90,7 +84,7 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
 
     public static int LoanAmount { get; set; }
     public static int DepositDaysNumber { get; set; }
-    public static int BankStructSize = DaggerfallUnity.Instance.ContentReader.MapFileReader.RegionCount + 1;
+    public static int BankStructSize = DaggerfallUnity.Instance.ContentReader.MapFileReader.RegionCount;
 
     public static int PercentageLost { get; set; }
 
@@ -134,7 +128,10 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
             {
                 bool PreviousAutomaticDepositSetting = AutomaticDeposit;
                 bool PreviousBankQuality = BankQuality;
+                bool PreviousAllowDepositing = AllowDepositing;
 
+
+                AllowDepositing = mod.GetSettings().GetValue<bool>("DepositSettings", "AllowDepositing");
                 AutomaticDeposit = mod.GetSettings().GetValue<bool>("DepositSettings", "AllowAutomaticDepositing");
                 BonusRate = mod.GetSettings().GetValue<float>("DepositSettings", "BonusRate");
                 DepositDaysNumber = mod.GetSettings().GetValue<int>("DepositSettings", "DepositDays");
@@ -144,10 +141,10 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
                 DepositDaysDue = DaggerfallDateTime.MinutesPerDay * DepositDaysNumber;
 
 
-                if (AutomaticDeposit != PreviousAutomaticDepositSetting || LoadedEventsFirstTime == false)
+                if (AutomaticDeposit != PreviousAutomaticDepositSetting || AllowDepositing != PreviousAllowDepositing || LoadedEventsFirstTime == false)
                 {
 
-                    if (AutomaticDeposit == true)
+                    if (AutomaticDeposit == true && AllowDepositing == true)
                     {
                         if (LoadedEventsFirstTime == true)
                         {
@@ -160,7 +157,7 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
 
 
                     }
-                    else
+                    else if (AutomaticDeposit == false && AllowDepositing == true)
                     {
                         if (LoadedEventsFirstTime == true)
                         {
@@ -174,12 +171,25 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
 
 
                     }
+                    else
+                    {
+
+                        if (LoadedEventsFirstTime == true)
+                        {
+                            DaggerfallBankManager.OnDepositGold -= AUTOSetDepositTimer;
+                            DaggerfallBankManager.OnDepositLOC -= AUTOSetDepositTimer;
+                            DaggerfallBankManager.OnDepositGold -= SetDepositTimer;
+                            DaggerfallBankManager.OnDepositLOC -= SetDepositTimer;
+                        }
+
+
+                    }
                 }
 
-                if (BankQuality != PreviousBankQuality || LoadedEventsFirstTime == false)
+                if (BankQuality != PreviousBankQuality || AllowDepositing != PreviousAllowDepositing || LoadedEventsFirstTime == false)
                 {
 
-                    if (BankQuality == true)
+                    if (BankQuality == true && AllowDepositing == true)
                         OnTransitionInterior += HandleTransitionToInterior;
                     else
                     {
@@ -300,13 +310,13 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
             if (BankBan == true)
                 PunishBanishment();
 
-            if (AutomaticDeposit == true)
+            if (AutomaticDeposit == true && AllowDepositing == true)
             {
 
                 AUTORewardBonusDeposit();
 
             }
-            else
+            else if (AutomaticDeposit == false && AllowDepositing == true)
             {
 
                 RewardBonusDeposit();
@@ -356,15 +366,17 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
 
     private void HandleTransitionToInterior(TransitionEventArgs args)
     {
-        if (GameManager.Instance.PlayerEnterExit.BuildingType == DFLocation.BuildingTypes.Bank && PlayerActivate.IsBuildingOpen(DFLocation.BuildingTypes.Bank))
+
+
+        if (HasLoadedData == true && GameManager.Instance.PlayerEnterExit.BuildingType == DFLocation.BuildingTypes.Bank && PlayerActivate.IsBuildingOpen(DFLocation.BuildingTypes.Bank))
         {
 
             DaggerfallMessageBox mb = null;
             int index = GameManager.Instance.PlayerGPS.CurrentRegionIndex;
             mb = DaggerfallUI.MessageBox(PrintBankQualityMessage(bankstruct[index].GetQualityType()), true);
         }
-    }
 
+    }
 
 
     #region NOAUTO
@@ -520,40 +532,33 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
             for (byte i = 0; i < BankStructSize; i++)
             {
 
-                if (bankstruct[i].GetBankDepositDate() > 0)
+                int bankgold = DaggerfallBankManager.BankAccounts[i].accountGold;
+
+                if (bankgold > 0)
                 {
-                    int bankgold = DaggerfallBankManager.BankAccounts[i].accountGold;
+                    bool[] record_flags = playerentity.RegionData[i].Flags;
+                    string RegionName = DaggerfallUnity.Instance.ContentReader.MapFileReader.GetRegionName(i);
 
-                    if (bankgold > 0)
+                    if (record_flags[3] || record_flags[5] || record_flags[8] || record_flags[11])
                     {
-                        bool[] record_flags = playerentity.RegionData[i].Flags;
-                        string RegionName = DaggerfallUnity.Instance.ContentReader.MapFileReader.GetRegionName(i);
+                        byte flagsPacked = (byte)(
+                          ((record_flags[3] ? 1 : 0) << 0) |    //War Lost
+                          ((record_flags[5] ? 1 : 0) << 1) |    //Plague
+                          ((record_flags[8] ? 1 : 0) << 2) |    //Famine
+                          ((record_flags[11] ? 1 : 0) << 3)     //Crime Wave
+                        );
 
-                        if (record_flags[3] || record_flags[5] || record_flags[8] || record_flags[11])
-                        {
-                            byte flagsPacked = (byte)(
-                              ((record_flags[3] ? 1 : 0) << 0) |    //War Lost
-                              ((record_flags[5] ? 1 : 0) << 1) |    //Plague
-                              ((record_flags[8] ? 1 : 0) << 2) |    //Famine
-                              ((record_flags[11] ? 1 : 0) << 3)    //Crime Wave
-                            );
-
-                            int goldlost = bankgold * PercentageLost / 100;
-                            DaggerfallBankManager.BankAccounts[i].accountGold -= goldlost;
-                            DaggerfallUI.AddHUDText(RegionEventsMessageBad(RegionName, flagsPacked, goldlost), MessageDelay);
-                        }
-
-                        if (record_flags[2])
-                        {
-                            int goldwon = bankgold * SpoilsOfWar / 100;
-                            DaggerfallBankManager.BankAccounts[i].accountGold += goldwon;
-                            DaggerfallUI.AddHUDText(RegionEventsMessageGood(RegionName, goldwon), MessageDelay);
-                        }
-
-
+                        int goldlost = bankgold * PercentageLost / 100;
+                        DaggerfallBankManager.BankAccounts[i].accountGold -= goldlost;
+                        DaggerfallUI.AddHUDText(RegionEventsMessageBad(RegionName, flagsPacked, goldlost), MessageDelay);
                     }
 
-
+                    if (record_flags[2])
+                    {
+                        int goldwon = bankgold * SpoilsOfWar / 100;
+                        DaggerfallBankManager.BankAccounts[i].accountGold += goldwon;
+                        DaggerfallUI.AddHUDText(RegionEventsMessageGood(RegionName, goldwon), MessageDelay);
+                    }
 
 
                 }
@@ -599,26 +604,18 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
         {
             int index = GameManager.Instance.PlayerGPS.CurrentRegionIndex;
 
-            if (playerentity.RegionData[index].SeverePunishmentFlags == 1)
+            if (playerentity.RegionData[index].SeverePunishmentFlags == 1 && QuestMachine.Instance.LastNPCClicked != null)
             {
 
-                if (QuestMachine.Instance.LastNPCClicked != null)
+                StaticNPC currentNPC = QuestMachine.Instance.LastNPCClicked;
+
+                if (currentNPC.gameObject.activeSelf == true && currentNPC.Data.factionID == 510)
                 {
-
-                    StaticNPC currentNPC = QuestMachine.Instance.LastNPCClicked;
-
-                    if (currentNPC.gameObject.activeSelf == true)
-                    {
-
-                        if (currentNPC.Data.factionID == 510) //is a banker
-                        {
-                            DaggerfallUI.UIManager.PopWindow();
-                            currentNPC.gameObject.SetActive(false);
-                            DaggerfallUI.MessageBox(RaceBanMessage(playerentity.RaceTemplate.Name), true);
-                        }
-
-                    }
+                    DaggerfallUI.UIManager.PopWindow();
+                    currentNPC.gameObject.SetActive(false);
+                    DaggerfallUI.MessageBox(RaceBanMessage(playerentity.RaceTemplate.Name), true);
                 }
+
             }
         }
 
@@ -682,7 +679,7 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
                 bankstruct = new BankExpanded[BankStructSize]
             };
 
-            for (int i = 0; i < bankstruct.Length; i++)
+            for (int i = 0; i < BankStructSize; i++)
             {
                 saveData.bankstruct[i] = bankstruct[i];
             }
@@ -709,7 +706,7 @@ public class BanksRemastered : MonoBehaviour, IHasModSaveData
             BanksRemasteredSaveData bankSaveData = (BanksRemasteredSaveData)saveData;
             bankstruct = new BankExpanded[BankStructSize];
 
-            for (int i = 0; i < bankSaveData.bankstruct.Length; i++)
+            for (int i = 0; i < BankStructSize; i++)
             {
                 bankstruct[i] = bankSaveData.bankstruct[i];
 
